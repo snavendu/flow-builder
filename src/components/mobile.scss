@@ -2,7 +2,7 @@
     height: 550px;
     background:#022B3A;
     width:275px;
-    position:absolute;
+    position:sticky;
     left:80vw;
     top:20vh;
     border-radius: 15px;
@@ -21,6 +21,8 @@
         flex-direction: column;
         padding:10px;
         font-size: 12px;
+        overflow: scroll;
+        padding-bottom: 50px;
 
         .message{
 
@@ -33,21 +35,50 @@
             background-color:#4C67BD;
             color:white;
             border-radius: 10px;
+            margin-top: 5px;
+            
+          
+
 
             
 
         };
 
+        .options{
+            display:flex;
+            flex-direction: row;
+            color: white;
+            .option{
+                height: fit-content;
+                width: fit-content;
+                padding:7px;
+                background-color:#4C67BD;
+                margin:5px;
+                border-radius: 5px;
+            }
+        }
+
         .message-admin{
             height: fit-content;
             width: fit-content;
-            max-width: 45%;
+            max-width: 85%;
             text-align: left;
             padding:7px;
             background-color: papayawhip;
             border-radius: 10px;
+            margin-top: 5px;
 
 
+        }
+        .input{
+            height:20px;
+            width: 90%;
+            height: 20px;
+            top: 475px;
+            margin-right: 20px;
+            position: absolute;
+            
+            
         }
     }
 

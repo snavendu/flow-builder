@@ -7,10 +7,10 @@ import SideBar from './components/sidebar';
 import BotNodes, { defaultBotNodes } from './components/node/botNodes';
 import _, { forEach } from 'lodash';
 import AddNode from './components/node/addNode';
-import uuid from "react-uuid";
+import shortID from "short-unique-id";
 
 
-
+const uuid = new shortID({length:4})
 
 function checkLink(linkData, newLink) {
   const duplicate = linkData.find(l => l.source == newLink.source);
@@ -22,7 +22,7 @@ function checkLink(linkData, newLink) {
   } else {
     const uniqueLink = linkData.filter(l => l.source !== newLink.source);
     const nE2 = {
-      id: `e${newLink.target}-${duplicate.target}`, source: newLink.target, target: duplicate.target, animated: true,
+      id: uuid(), source: newLink.target, target: duplicate.target, animated: true,
       style: { stroke: '#f6ab6c' }
     }
     return { links: [...uniqueLink, newLink, nE2], duplicate: true }
@@ -58,12 +58,12 @@ function App() {
       const nodeData = els.find(d => d.id == data.data.id);
       // const max= Math.max(els.map(e=>parseInt(e.id)));
       let oldNode = [...els.filter(e => !!!e.source)];
-      const newId = `${oldNode.length + 1}`
+      const newId = uuid();
       const position = { x: nodeData.position.x, y: nodeData.position.y + 200 };
       const newNode = { id: `${newId}`, type: "special", data: { onChange: handleChange, openMenu: handleVisible, data: { id: `${newId}`, ...template } }, position: position };
       const oldLink = els.filter(e => !!!e.type);
       const newLink = {
-        id: `e${nodeData.id}-${newId}`, animated: true,
+        id: uuid(), animated: true,
         style: { stroke: '#f6ab6c' }, source: `${nodeData.id}`, target: newId
       }
 
@@ -90,13 +90,13 @@ function App() {
   }
 
   useEffect(() => {
-
+    const id = uuid();
     const Elements = [
       {
-        id: '1',
+        id,
         type: "special",
         // you can also pass a React component as a label
-        data: { onChange: handleAdd, openMenu: handleVisible, data: { id: `1`, parentId: `1` } },
+        data: { onChange: handleAdd, openMenu: handleVisible, data: { id, parentId: id } },
         position: { x: 100, y: 125 },
       }
 
@@ -116,7 +116,6 @@ function App() {
 
   const handleSimulate = (check) => {
     console.log("i ama in")
-    setSimulating(check);
     // refactor elements into bot message and bot links
     const element = [...elements];
     const links = element.filter(e=>!!!e.type);
@@ -124,33 +123,27 @@ function App() {
     console.log(links,nodes,"elements data")
     const botMessage = createBotMessage(nodes);
     const botLinks = createBotLinks(links);
+    console.log(botMessage,botLinks,"main simulated data")
     setBotMessage(botMessage);
     setBotLinks(botLinks);
+    setSimulating(check);
+
 
 
   }
 
   const createBotMessage=(flowMessages)=>{
 
-    let bridge={};
-
-    flowMessages.map(f=>{
-      const _id = uuid();
+    const bridge = flowMessages.map(f=>{
       const content = f.data.data.content;
-      bridge[f.id] = {_id,...content};
+      return {id:f.id,...content};
     })
-    console.log(bridge);
     return bridge;
   }
 
   const createBotLinks=(flowLinks)=>{
 
-    let bridge={};
-    flowLinks.map(f=>{
-      const {source, target} = f;
-      const _id = uuid();
-      bridge[f.id] = {_id, source, target}
-    })
+    const bridge = flowLinks.map(f=>({_id:f.id, source:f.source, target:f.target}))
 
     return bridge;
 
@@ -179,6 +172,15 @@ function App() {
     const index = els.findIndex(e => e.id == n.data.id);
     els[index].data.data.content.question = data.question;
 
+    if(n.data?.content.type == "form"){
+      const keys = Object.keys(data).filter(k => k.includes("option"));
+      keys.forEach((k, i) => {
+        els[index].data.data.content.labels.push(data[k]);
+
+      })
+
+    }
+
     if (n.data?.content.type == "choice") {
       const keys = Object.keys(data).filter(k => k.includes("option"));
       if (keys.length > 0) {
@@ -188,7 +190,7 @@ function App() {
           if (els.find(e => e.id == `c${n.data.id}-${i}`)) {
             return;
           }
-          const id = `c${n.data.id}-${i}`;
+          const id = uuid();
           const parent = els[index];
           const xpos = i % 2 == 0 ? parent.position.x + (i) * 150 : parent.position.x - (i + 1) * 150;
           const pos = { x: xpos, y: parent.position.y + 250 }
@@ -201,7 +203,7 @@ function App() {
           }
 
           const newLink = {
-            id: `e${n.data.id}-${i}`, source: `${n.data.id}`, target: `c${n.data.id}-${i}`, label: data[k], animated: true,
+            id: uuid(), source: `${n.data.id}`, target: id, label: data[k], animated: true,
             style: { stroke: '#f6ab6c' },
             labelBgPadding: [8, 4],
             labelBgBorderRadius: 4,
@@ -242,7 +244,7 @@ function App() {
         onElementsRemove={onElementsRemove}
       >
         <Background variant={"dots"} size={1} gap={48} />
-        {simulating && <Simulator />}
+        {simulating && <Simulator botMessage={botMessage} botLinks={botLinks} />}
       </ReactFlow>
 
       <SideBar visible={visible} setVisible={setVisible} handleSubmit={handleSubmit} node={elements?.filter(e => e.id == selected.id)[0]?.data} />
