@@ -37,7 +37,7 @@ const nodeTypes = {
   add: AddNode
 };
 
-function App() {
+function BotFlow() {
   const [elements, setElements] = useState([]);
   const [visible, setVisible] = useState(false);
   const [selected, setSelected] = useState({});
@@ -46,7 +46,7 @@ function App() {
   const [botLinks, setBotLinks] = useState([]);
 
   const handleVisible = (data) => {
-    setVisible(!visible);
+    setVisible(v=> !v);
     setSelected(data);
   }
 
@@ -115,15 +115,12 @@ function App() {
   }
 
   const handleSimulate = (check) => {
-    console.log("i ama in")
     // refactor elements into bot message and bot links
     const element = [...elements];
     const links = element.filter(e=>!!!e.type);
     const nodes = element.filter(e=>!!!e.source);
-    console.log(links,nodes,"elements data")
     const botMessage = createBotMessage(nodes);
     const botLinks = createBotLinks(links);
-    console.log(botMessage,botLinks,"main simulated data")
     setBotMessage(botMessage);
     setBotLinks(botLinks);
     setSimulating(check);
@@ -158,6 +155,7 @@ function App() {
       const addData = { ...template, id: add.id, parentId: add.data.data.parentId };
       add.data.data = addData
       add.data.onChange = handleChange
+      add.data.openMenu=handleVisible;
       setVisible(true);
       setSelected(add)
       return [...elements]
@@ -168,6 +166,7 @@ function App() {
   }
   const handleSubmit = (n, data) => {
     setVisible(false);
+    console.log(data,"incoming data")
     const els = _.cloneDeep(elements)
     const index = els.findIndex(e => e.id == n.data.id);
     els[index].data.data.content.question = data.question;
@@ -182,12 +181,14 @@ function App() {
     }
 
     if (n.data?.content.type == "choice") {
-      const keys = Object.keys(data).filter(k => k.includes("option"));
+      const keys = Object.keys(data).filter(k => !k.includes("question"));
       if (keys.length > 0) {
 
         keys.forEach((k, i) => {
 
-          if (els.find(e => e.id == `c${n.data.id}-${i}`)) {
+         
+          if(!!!k.includes("new")){
+            els.find(e=>e.id==k).data.data.content.option.text=data[k]
             return;
           }
           const id = uuid();
@@ -266,4 +267,4 @@ const GreyScreen = () => {
   </div>
 }
 
-export default App;
+export default BotFlow;

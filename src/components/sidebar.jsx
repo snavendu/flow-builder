@@ -13,7 +13,7 @@ const Sidebar = (props) => {
         visible={props.visible}
         getContainer={false}
     >   
-         <RenderForm node={props?.node} type={props.node?.data?.content.type} onSubmit={(data)=>{props.handleSubmit(props.node,data);console.log("i was herer")}} />
+         <RenderForm node={props?.node} type={props.node?.data?.content.type} onSubmit={(data)=>{props.handleSubmit(props.node,data);}} />
     </Drawer>
 
 }
@@ -37,9 +37,9 @@ const AddOption=(props)=>{
             {
                 return <Row justify="space-between">
                     <Col span={20}>
-                        <Form.Item name={`option-${i}`}>
+                        <Form.Item name={!!!o?.id?`new-option-${i}`:`${o.id}`}>
 
-                     <Input autofocus={true} style={{display:"inline", marginBottom:10}} defaultValue={o.text}/> 
+                     <Input key={o?.id} autofocus={true} style={{display:"inline", marginBottom:10}} defaultValue={!!!o?.text?o:o.text}/> 
                         </Form.Item>
                     </Col>
                     <Col offset={2}span={2}>
@@ -64,10 +64,8 @@ const AddOption=(props)=>{
 
 
 const RenderForm = ({ type, onSubmit, node }) => {
-    console.log(node)
     if(!!!node){return null}
     const {content,id}=node.data;
-   
     switch (type) {
         case "form": return (
             <Form key={id} onFinish={onSubmit}>
@@ -75,7 +73,7 @@ const RenderForm = ({ type, onSubmit, node }) => {
                     <Input placeholder="Add your Question" defaultValue={content.question}/>
                 </Form.Item>
                 <Form.Item>
-                 <AddOption type="form" content={content.label}/>
+                 <AddOption type="form" option={content.labels}/>
                 </Form.Item>
                 <Button htmlType="submit" type="primary">Save</Button>
             </Form>

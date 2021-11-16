@@ -2,6 +2,7 @@ import { Input, Form, Button } from "antd";
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components"
 import "./mobile.scss";
+import Typing from "./typing";
 
 
 
@@ -9,38 +10,24 @@ const Simulator=(props)=>{
     const [value, setvalue] = useState("")
     const [messages, setmessages] = useState([]);
     const [current, setCurrent] = useState("");
+    const [typing, setTyping] = useState(false);
 
     useEffect(() => {
       const firstMessage = props.botLinks.length==0?props.botMessage[0]:props.botMessage.find(b=>props.botLinks.find(l=>l.target!=b.id)!=undefined);
-      console.log("first",firstMessage);
       if(!!!firstMessage){
           return;
       }
-      setCurrent(firstMessage?.id);
-      console.log(firstMessage)
       const newData = [...messages];
-      newData.push({id:firstMessage?.id, msg:firstMessage?.question,admin:true,type:firstMessage.type,option:firstMessage?.option,labels:firstMessage?.labels})
-      setmessages(newData)
+      setTyping(true)
+      setTimeout(() => {
+          setTyping(false)
+          newData.push({id:firstMessage?.id, msg:firstMessage?.question,admin:true,type:firstMessage.type,option:firstMessage?.option,labels:firstMessage?.labels})
+          setmessages(newData)
+      },1000);
     }, [props])
     
 
-    useEffect(() => {
-        const latest = messages[messages.length-1]
-        if(latest?.admin==false){
-            // setTimeout(() => {
-            //     const link = props.botLinks.find(l=>l.source==current);
-            //     const nextMessage = props.botMessage.find(b=>b.id==link?.target);
-            //     if(!!!nextMessage){
-            //         return;
-            //     }
-            //     const newData = [...messages];
-            //     newData.push({msg:nextMessage?.question,admin:true,type:nextMessage?.type ,option: nextMessage?.option,labels:nextMessage?.labels})
-            //     setmessages(newData)
-                
-            // },1000);
-        }
-       
-    }, [messages])
+    
 
     const handleChange=(e)=>{
         e.preventDefault();
@@ -54,12 +41,12 @@ const Simulator=(props)=>{
         newMessages.map(n=>{
             if(n.id==msg.id){
                 n.option=[]
+                setTimeout(() => {
+                    newMessages.push({msg:o.text,admin:false})
+                    setmessages(newMessages);
+                    renderNext(o.id)
+                },500);
             };
-            setTimeout(() => {
-                newMessages.push({msg:o.text,admin:false})
-                setmessages(newMessages);
-                renderNext(o.id)
-            },1000);
         })
 
     }
@@ -70,12 +57,15 @@ const Simulator=(props)=>{
         }
         const nextMessage = props.botMessage.find(b=>b.id==id);
         const newMessage = {id:nextMessage?.id, msg:nextMessage?.question,admin:true,type:nextMessage?.type ,option: nextMessage?.option,labels:nextMessage?.labels}
+        setTyping(true)
         setTimeout(() => {
+            setTyping(false)
             setmessages(msg=>{
                 const newMessages = [...msg];
                 newMessages.push(newMessage);
                 return newMessages;
             })
+            
         },1000);
     }
 
@@ -85,15 +75,16 @@ const Simulator=(props)=>{
         newMessages.map(n=>{
             if(n.id==msg.id){
                 n.labels=[]
+                setTimeout(() => { 
+                    console.log("i was called")
+                    const key = Object.keys(data)[0]
+                    newMessages.push({msg:`${key} : ${data[key]}`,admin:false})
+                    setmessages(newMessages);
+                    const next = props.botLinks.find(l=>l.source==msg.id)?.target;
+                    console.log(next,"next",props.botLinks)
+                    renderNext(next);
+                },500);
             };
-            setTimeout(() => {
-                const key = Object.keys(data)[0]
-                newMessages.push({msg:`${key} : ${data[key]}`,admin:false})
-                setmessages(newMessages);
-                const next = props.botLinks.find(l=>l.source==msg.id)?.target;
-                console.log(next,"next",props.botLinks)
-                renderNext(next);
-            },1000);
         })
 
     }
@@ -152,6 +143,9 @@ const Simulator=(props)=>{
                         <div className="message">{d.msg}</div>)
 
                     )}
+                    {typing&&<div className="message-admin">
+                        <Typing/>
+                    </div>}
 
                     <div className="input">
 

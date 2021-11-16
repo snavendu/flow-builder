@@ -1,0 +1,27 @@
+.card{
+    height:200px;
+    width:200px;
+    border-style:dashed;
+    border-width:3px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-right: 10px
+}
+
+
+.intent-card{
+    height:50px;
+    min-width: 100px;
+    margin: 10px 10px;
+}
+
+.horizontal{
+    white-space:wrap;
+    // overflow:auto;
+}
+
+.extra{
+    display:flex;
+    flex-direction: column;
+}
